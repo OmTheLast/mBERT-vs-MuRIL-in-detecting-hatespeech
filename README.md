@@ -31,6 +31,20 @@ The dataset undergoes preprocessing including:
 - Special character cleaning
 - Text normalization
 
+### Dataset Challenges
+We've identified some challenges with the current dataset that may impact model performance:
+- Potential class imbalance between hate and non-hate samples
+- Limited context for ambiguous expressions
+- Possible annotation inconsistencies in mixed-language content
+- Coverage gaps for certain dialects or expressions
+
+### Future Work: Multi-Dataset Comparison
+To address these challenges and provide more robust results, we plan to train and evaluate models on multiple Hinglish hate speech datasets. This will allow us to:
+- Compare model performance across different data distributions
+- Identify which models generalize better across various contexts
+- Determine the impact of dataset quality and size on performance
+- Establish more reliable benchmarks for Hinglish hate speech detection
+
 ## Models
 
 ### mBERT (Multilingual BERT)
