@@ -2,7 +2,16 @@
 
 This repository contains research and implementation for detecting hate speech in Hinglish (Hindi-English mixed language) text using transformer-based models. The project compares the performance of mBERT (Multilingual BERT) and MuRIL (Multilingual Representations for Indian Languages) models for hate speech classification.
 
+## Trained Models on Hugging Face
+
+[Browse the public mBERT and MuRIL model collection](https://huggingface.co/collections/OmTheLast/hinglish-research-mbert-vs-muril-6aa96a16ed03bba0e89e9408).
+
+The collection contains 26 research checkpoints across 14 model repositories from the expanded [cross-dataset study](https://github.com/OmTheLast/mBERT-vs-MuRIL-cross-dataset-hinglish-hate). It includes Kaggle, CM, THAR, and mixed-dataset training conditions. Seeds 7, 13, and 42 are preserved where available, with seed 42 as the default.
+
+This repository preserves the earlier, simpler project. The collection documents the later study's checkpoints; their training settings and results should be read from their individual model cards. Each card includes label definitions, evaluation results, loading examples, limitations, and licensing notes.
+
 ## Table of Contents
+- [Trained Models on Hugging Face](#trained-models-on-hugging-face)
 - [Overview](#overview)
 - [Dataset](#dataset)
 - [Models](#models)
