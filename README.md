@@ -1,200 +1,42 @@
-# Hinglish Hate Speech Detection
+# mBERT vs MuRIL: Hinglish Hate-Speech Detection
 
-This repository contains research and implementation for detecting hate speech in Hinglish (Hindi-English mixed language) text using transformer-based models. The project compares the performance of mBERT (Multilingual BERT) and MuRIL (Multilingual Representations for Indian Languages) models for hate speech classification.
+An initial comparison of mBERT and MuRIL for binary hate-speech detection in Hinglish (Hindi–English code-mixed text).
 
-## Trained Models on Hugging Face
+[Expanded cross-dataset study](https://github.com/OmTheLast/mBERT-vs-MuRIL-cross-dataset-hinglish-hate) · [Models on Hugging Face](https://huggingface.co/collections/OmTheLast/hinglish-research-mbert-vs-muril-6aa96a16ed03bba0e89e9408)
 
-[Browse the public mBERT and MuRIL model collection](https://huggingface.co/collections/OmTheLast/hinglish-research-mbert-vs-muril-6aa96a16ed03bba0e89e9408).
+## Research question
 
-The collection contains 26 research checkpoints across 14 model repositories from the expanded [cross-dataset study](https://github.com/OmTheLast/mBERT-vs-MuRIL-cross-dataset-hinglish-hate). It includes Kaggle, CM, THAR, and mixed-dataset training conditions. Seeds 7, 13, and 42 are preserved where available, with seed 42 as the default.
+How do multilingual pretraining (mBERT) and Indian-language pretraining (MuRIL) compare when fine-tuned with the same binary classification setup?
 
-This repository preserves the earlier, simpler project. The collection documents the later study's checkpoints; their training settings and results should be read from their individual model cards. Each card includes label definitions, evaluation results, loading examples, limitations, and licensing notes.
+## Method
 
-## Table of Contents
-- [Trained Models on Hugging Face](#trained-models-on-hugging-face)
-- [Overview](#overview)
-- [Dataset](#dataset)
-- [Models](#models)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Training](#training)
-- [Results](#results)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
+- Fine-tune `bert-base-multilingual-cased` and `google/muril-base-cased` on CSV data with `text` and `hate_label` columns.
+- Lowercase text, remove URLs, handles and punctuation, and normalize whitespace.
+- Use an 80/20 random split with seed 42, two epochs, batch size 16, learning rate 2e-5, and a 128-token limit.
+- Record accuracy and weighted F1 during training; inspect precision, recall, F1 and inference latency with the benchmark script.
 
-## Overview
+## Run training
 
-Hinglish, a blend of Hindi and English, is widely used in social media and online platforms in India. Detecting hate speech in this mixed language presents unique challenges due to code-switching, transliteration, and cultural context. This project aims to evaluate and compare the effectiveness of multilingual transformer models in identifying hate speech in Hinglish text.
-
-## Dataset
-
-The dataset used in this project is a combined Hinglish hate speech dataset containing:
-- Text content in Hinglish (Romanized script)
-- Binary labels: 0 (Non-Hate) and 1 (Hate Speech)
-- Various contexts including social media posts, comments, and other user-generated content
-
-The dataset undergoes preprocessing including:
-- URL removal
-- User mention removal
-- Special character cleaning
-- Text normalization
-
-### Dataset Challenges
-We've identified some challenges with the current dataset that may impact model performance:
-- Potential class imbalance between hate and non-hate samples
-- Limited context for ambiguous expressions
-- Possible annotation inconsistencies in mixed-language content
-- Coverage gaps for certain dialects or expressions
-
-### Future Work: Multi-Dataset Comparison
-To address these challenges and provide more robust results, we plan to train and evaluate models on multiple Hinglish hate speech datasets. This will allow us to:
-- Compare model performance across different data distributions
-- Identify which models generalize better across various contexts
-- Determine the impact of dataset quality and size on performance
-- Establish more reliable benchmarks for Hinglish hate speech detection
-
-## Models
-
-### mBERT (Multilingual BERT)
-- Pre-trained on 104 languages including Hindi
-- 12-layer, 768-hidden, 12-heads, 110M parameters
-- General-purpose multilingual model
-
-### MuRIL (Multilingual Representations for Indian Languages)
-- Specifically designed for Indian languages
-- Enhanced performance on Indian language tasks
-- Better representation of code-switched content
-
-## Installation
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/hinglish-hate-speech-detection.git
-cd hinglish-hate-speech-detection
+git clone https://github.com/OmTheLast/mBERT-vs-MuRIL-in-detecting-hatespeech.git
+cd mBERT-vs-MuRIL-in-detecting-hatespeech
+python -m venv .venv
+source .venv/bin/activate
+python Training/Trainer.py --model both --data-path combined_hate_speech_dataset.csv
 ```
 
-2. Install required packages:
-```bash
-pip install transformers accelerate scikit-learn datasets pandas torch
-```
+The runner installs its Python dependencies. Saved models are written to `Hinglish_Hate_Model_mBert` and `Hinglish_Hate_Model_MuRIL`.
 
-Or run the package installation script:
-```bash
-python Training/Packages.py
-```
+For benchmarking, update the model paths in [benchmark.py](benchmark.py) to these output directories; its defaults point to `models/mbert_model` and `models/muril_model`.
 
-## Usage
+## Scope and limitations
 
-### Training Models
+This is a single-split baseline. The evaluation split also guides checkpoint selection, so it is not an untouched final test set. The supplied training path does not filter languages automatically. The small diagnostic benchmark does not establish generalization or suitability for automated moderation.
 
-To train both models:
-```bash
-python Training/Trainer.py --model both
-```
+The [later study](https://github.com/OmTheLast/mBERT-vs-MuRIL-cross-dataset-hinglish-hate) adds three datasets, multiple seeds, training mixtures, cross-dataset evaluation and error analysis. The **26 checkpoints in the linked Hugging Face collection belong to that later study**; its model cards document results, label definitions, loading instructions and licensing notes.
 
-To train only MuRIL:
-```bash
-python Training/Trainer.py --model muril
-```
+Code and analysis by **Om Patnaik**.
 
-To train only mBERT:
-```bash
-python Training/Trainer.py --model mbert
-```
+### Tools Note
 
-To specify a custom dataset path:
-```bash
-python Training/Trainer.py --model both --data-path /path/to/your/dataset.csv
-```
-
-### Training Individual Models
-
-To train MuRIL separately:
-```bash
-python Training/Train_MuRIL.py
-```
-
-To train mBERT separately:
-```bash
-python Training/Train_mBert.py
-```
-
-### Loading Pre-trained Models
-
-After training, the models are saved in:
-- `./Hinglish_Hate_Model_MuRIL/` for MuRIL
-- `./Hinglish_Hate_Model_mBert/` for mBERT
-
-You can load them using the transformers library:
-```python
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
-# For MuRIL
-tokenizer = AutoTokenizer.from_pretrained("./Hinglish_Hate_Model_MuRIL")
-model = AutoModelForSequenceClassification.from_pretrained("./Hinglish_Hate_Model_MuRIL")
-
-# For mBERT
-tokenizer = AutoTokenizer.from_pretrained("./Hinglish_Hate_Model_mBert")
-model = AutoModelForSequenceClassification.from_pretrained("./Hinglish_Hate_Model_mBert")
-```
-
-## Training
-
-The training process includes:
-- Data preprocessing and cleaning
-- Train/test split (80/20)
-- Tokenization with max length of 128
-- Training with batch size of 16
-- 2 epochs with learning rate of 2e-5
-- Evaluation metrics: Accuracy and F1-score
-- Model saving after training
-
-### Hyperparameters
-- Learning Rate: 2e-5
-- Batch Size: 16
-- Epochs: 2
-- Max Sequence Length: 128
-- Weight Decay: 0.01
-
-## Results
-
-The models are evaluated using:
-- Accuracy
-- F1-score (weighted average)
-- Precision and Recall (available in detailed logs)
-
-Detailed benchmark results are saved in `benchmark_results_detailed.csv`.
-
-## Project Structure
-
-```
-Hinglish Research/
-├── Training/
-│   ├── Packages.py           # Package installation script
-│   ├── Loading_Dataset.py    # Data loading and preprocessing
-│   ├── Trainer.py           # Main training script (runs both models)
-│   ├── Train_MuRIL.py       # MuRIL-specific training
-│   └── Train_mBert.py       # mBERT-specific training
-├── combined_hate_speech_dataset.csv  # Main dataset
-├── benchmark_results_detailed.csv    # Detailed results
-└── README.md                # This file
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Thanks to the creators of mBERT and MuRIL models
-- Dataset contributors for providing Hinglish hate speech data
-- Hugging Face for providing the transformers library
+AI tools were used for coding, debugging, and documentation assistance; the research direction, result interpretation, and final claims were reviewed and owned by Om Patnaik.
