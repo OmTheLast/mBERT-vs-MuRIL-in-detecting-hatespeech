@@ -1,42 +1,57 @@
-# mBERT vs MuRIL: Hinglish Hate-Speech Detection
+<h1 align="center">mBERT vs MuRIL: Hinglish Hate Speech</h1>
 
-An initial comparison of mBERT and MuRIL for binary hate-speech detection in Hinglish (Hindi–English code-mixed text).
+**Run a matched binary Hinglish hate-speech baseline and inspect the training and evaluation choices behind it.**
 
-[Expanded cross-dataset study](https://github.com/OmTheLast/mBERT-vs-MuRIL-cross-dataset-hinglish-hate) · [Models on Hugging Face](https://huggingface.co/collections/OmTheLast/hinglish-research-mbert-vs-muril-6aa96a16ed03bba0e89e9408)
+Python training scripts. External CSV and model downloads required. Single split; evaluation also guides checkpoint selection.
 
-## Research question
+By Om Patnaik · repository created December 2025.
 
-How do multilingual pretraining (mBERT) and Indian-language pretraining (MuRIL) compare when fine-tuned with the same binary classification setup?
+## Install
 
-## Method
+| Platform / path | Start here |
+| --- | --- |
+| Python | Create a virtual environment; the training runner installs its Python dependencies |
 
-- Fine-tune `bert-base-multilingual-cased` and `google/muril-base-cased` on CSV data with `text` and `hate_label` columns.
-- Lowercase text, remove URLs, handles and punctuation, and normalize whitespace.
-- Use an 80/20 random split with seed 42, two epochs, batch size 16, learning rate 2e-5, and a 128-token limit.
-- Record accuracy and weighted F1 during training; inspect precision, recall, F1 and inference latency with the benchmark script.
-
-## Run training
+Provide a CSV with `text` and `hate_label`, then use the training command below. To inspect the method without running training, read [the expanded study](https://github.com/OmTheLast/mBERT-vs-MuRIL-cross-dataset-hinglish-hate).
 
 ```bash
-git clone https://github.com/OmTheLast/mBERT-vs-MuRIL-in-detecting-hatespeech.git
-cd mBERT-vs-MuRIL-in-detecting-hatespeech
-python -m venv .venv
-source .venv/bin/activate
-python Training/Trainer.py --model both --data-path combined_hate_speech_dataset.csv
+python -m compileall -q Training benchmark.py harness.py
 ```
 
-The runner installs its Python dependencies. Saved models are written to `Hinglish_Hate_Model_mBert` and `Hinglish_Hate_Model_MuRIL`.
+## Why
 
-For benchmarking, update the model paths in [benchmark.py](benchmark.py) to these output directories; its defaults point to `models/mbert_model` and `models/muril_model`.
+You want to compare multilingual pretraining with Indian-language pretraining under the same initial recipe. This baseline fine-tunes mBERT and MuRIL with an 80/20 seed-42 split, two epochs, batch size 16, a 2e-5 learning rate, and 128-token inputs. It does not establish cross-domain generalization.
 
-## Scope and limitations
+## Prepare the baseline input
 
-This is a single-split baseline. The evaluation split also guides checkpoint selection, so it is not an untouched final test set. The supplied training path does not filter languages automatically. The small diagnostic benchmark does not establish generalization or suitability for automated moderation.
+Cleaning lowercases text, removes URLs, handles and punctuation, and normalizes whitespace. The training path does not automatically filter languages; inspect your CSV before using it.
 
-The [later study](https://github.com/OmTheLast/mBERT-vs-MuRIL-cross-dataset-hinglish-hate) adds three datasets, multiple seeds, training mixtures, cross-dataset evaluation and error analysis. The **26 checkpoints in the linked Hugging Face collection belong to that later study**; its model cards document results, label definitions, loading instructions and licensing notes.
+## Inspect the saved model
 
-Code and analysis by **Om Patnaik**.
+Outputs are `Hinglish_Hate_Model_mBert` and `Hinglish_Hate_Model_MuRIL`. Update `benchmark.py` paths before benchmarking; its defaults point elsewhere. The 26 released checkpoints belong to the later cross-dataset study.
 
-### Tools Note
+## Notes from building it
 
-AI tools were used for coding, debugging, and documentation assistance; the research direction, result interpretation, and final claims were reviewed and owned by Om Patnaik.
+I began with one matched recipe so the pretraining choice was explicit. The later study added datasets, seeds, mixtures, and error analysis after this single-split comparison proved too narrow. I would treat this repo as the baseline method rather than pool it with independent evidence.
+
+## Commands
+
+```bash
+python Training/Trainer.py --model both --data-path combined_hate_speech_dataset.csv  # train both models
+python benchmark.py                         # benchmark after updating model paths
+python -m compileall -q Training benchmark.py harness.py  # check syntax without training
+```
+
+## Verify it yourself
+
+```bash
+python -m compileall -q Training benchmark.py harness.py
+```
+
+Compilation checks syntax and launches no training. Benchmarking requires local checkpoints and its diagnostic inputs; the small diagnostic set is not an independent moderation benchmark.
+
+## Credits, license and pointers
+
+Code and analysis by Om Patnaik, assisted by AI tools. Builds on Google mBERT/MuRIL, Transformers, and PyTorch. No source license file is present; checkpoint terms are documented in the later study’s model cards.
+
+[Full setup, original notes, and project history](README-DETAILS.md).
